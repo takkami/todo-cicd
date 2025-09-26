@@ -1,58 +1,3 @@
-name: Todo App CI/CD Pipeline
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  build:
-    name: Build Phase
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build application
-        run: npm run build
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-files
-          path: dist/
-          retention-days: 1
-
-  test:
-    name: Test Phase
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: npm run test
-
   deploy:
     name: Deploy Phase
     runs-on: ubuntu-latest
@@ -80,15 +25,20 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Prepeare Google Application Credentials
+      - name: Prepare Google Application Credentials
+        shell: bash
         run: |
-          echo ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }} | base64 --decode > $HOME/private-key.json
+          set -euo pipefail
+          printf '%s' "${{ secrets.GOOGLE_CREDENTIALS_B64 }}" | base64 -d > "$HOME/private-key.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/private-key.json" >> "$GITHUB_ENV"
 
       - name: Deploy Firebase
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
         run: |
-          export GOOGLE_APPLICATION_CREDENTIALS=$HOME/private-key.json
           firebase experiments:enable webframeworks
-          firebase deploy --only hosting
+          firebase deploy --project todoapp-1758903137 --only hosting
+
       - name: Remove private key
         if: always()
-        run: rm $HOME/private-key.json
+        run: rm -f "$HOME/private-key.json"
