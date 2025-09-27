@@ -32,7 +32,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-indigo-100 py-8 px-4">
       <div className="max-w-md mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
@@ -48,7 +48,7 @@ function App() {
               onKeyPress={handleKeyPress}
               placeholder="新しいタスクを入力..."
               aria-label="新しいタスクを入力"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
             />
             <button
               onClick={handleAddTodo}
@@ -74,14 +74,14 @@ function App() {
                   className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${
                     todo.completed
                       ? "bg-gray-50 border-gray-200"
-                      : "bg-white border-gray-300 hover:border-blue-300"
+                      : "bg-white border-gray-300 hover:border-red-300"
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={todo.completed}
                     onChange={() => handleToggleTodo(todo.id)}
-                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500 focus:ring-2"
                   />
                   <span
                     className={`flex-1 ${
