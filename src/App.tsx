@@ -52,7 +52,10 @@ function App() {
             />
             <button
               onClick={handleAddTodo}
-              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+              className="px-6 py-2 text-white rounded-lg transition-colors duration-200
+                        focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2
+                        !bg-red-500 hover:!bg-red-600
+                        dark:!bg-red-500 dark:!hover:bg-red-600"
             >
               追加
             </button>
