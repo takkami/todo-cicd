@@ -97,28 +97,26 @@ function App() {
               "
             />
             <button
-              type="button"
               onClick={handleAddTodo}
-              disabled={!title.trim()}
               className="
                 inline-flex items-center justify-center
                 rounded-xl px-5 py-2.5 text-sm font-semibold
                 transition-colors duration-150 shadow-sm border
 
                 bg-blue-600 hover:bg-blue-700 active:bg-blue-800
-                text-white border-blue-900/20
+                text-blue-600 border-blue-900/20
 
                 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:active:bg-indigo-300
-                dark:text-slate-900 dark:border-indigo-900/10
+                dark:text-white dark:border-indigo-900/10
 
                 focus-visible:outline-none focus-visible:ring-2
                 focus-visible:ring-blue-500 focus-visible:ring-offset-2
                 dark:focus-visible:ring-indigo-400 dark:focus-visible:ring-offset-slate-900
 
                 disabled:bg-blue-500 disabled:text-white
-                disabled:hover:bg-blue-500/95 disabled:active:bg-blue-500
+                disabled:hover:bg-blue-500/95
                 dark:disabled:bg-indigo-500 dark:disabled:text-slate-900
-                dark:disabled:hover:bg-indigo-500/95 dark:disabled:active:bg-indigo-500
+                dark:disabled:hover:bg-indigo-500/95
 
                 disabled:cursor-not-allowed disabled:shadow-none
               "
