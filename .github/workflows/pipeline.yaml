@@ -72,7 +72,7 @@ jobs:
       - name: Auth to Google Cloud (sets ADC)
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_JSON }}
+          credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Deploy Firebase
         env:
