@@ -51,47 +51,37 @@ jobs:
       - name: Run tests
         run: npm run test
 
-  deploy:
-    name: Deploy Phase
-    runs-on: ubuntu-latest
-    needs: [build, test]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    deploy:
+      name: Deploy Phase
+      runs-on: ubuntu-latest
+      needs: [build, test]
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-files
-          path: dist/
+        - name: Download build artifacts
+          uses: actions/download-artifact@v4
+          with:
+            name: build-files
+            path: dist/
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: 20
+            cache: npm
 
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+        - name: Install Firebase CLI
+          run: npm install -g firebase-tools
 
-      - name: Install dependencies
-        run: npm install
+        - name: Auth to Google Cloud (sets ADC)
+          uses: google-github-actions/auth@v2
+          with:
+            credentials_json: ${{ secrets.GCP_SA_JSON }}
 
-      # ★ Base64一行のSecretを使う場合（GOOGLE_CREDENTIALS_B64）
-      - name: Prepare Google Application Credentials
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s' "${{ secrets.GOOGLE_CREDENTIALS_B64 }}" | base64 -d > "$HOME/private-key.json"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/private-key.json" >> "$GITHUB_ENV"
-
-      - name: Deploy Firebase
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
-        run: |
-          firebase experiments:enable webframeworks
-          firebase deploy --project todoapp-1758903137 --only hosting
-
-      - name: Remove private key
-        if: always()
-        run: rm -f "$HOME/private-key.json"
+        - name: Deploy Firebase
+          env:
+            # 明示的にプロジェクト指定（.firebasercが無くてもOK）
+            FIREBASE_CLI_EXPERIMENTS: webframeworks
+          run: |
+            firebase deploy --project todoapp-1758903137 --only hosting --non-interactive
