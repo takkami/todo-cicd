@@ -35,7 +35,7 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-indigo-100 py-8 px-4">
       <div className="max-w-md mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
+          <h1 className="text-3xl font-bold text-center text-blue-800 mb-6">
             📝 Todoアプリ!
           </h1>
 
