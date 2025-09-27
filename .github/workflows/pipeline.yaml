@@ -100,17 +100,24 @@ jobs:
         run: |
           firebase deploy --project todoapp-1758903137 --only hosting --non-interactive
 
-      - name: Verify production URL content
+      - name: Verify production assets (CSS/JS)
         run: |
           set -e
-          for URL in \
-            "https://todoapp-1758903137.web.app" \
-            "https://todoapp-1758903137.firebaseapp.com"
-          do
-            echo "Checking $URL"
-            curl -fsS "$URL/?v=$(date +%s)" | grep -q "Todoアプリ!" && { echo "✅ Content ok at $URL"; exit 0; }
+          for BASE in "https://todoapp-1758903137.web.app" "https://todoapp-1758903137.firebaseapp.com"; do
+            echo "Checking $BASE"
+            HTML="$(curl -fsSL "$BASE/?v=$(date +%s)")"
+
+            CSS_PATH="$(echo "$HTML" | grep -oE '/assets/index-[^"]+\.css' | head -n1)"
+            JS_PATH="$(echo  "$HTML" | grep -oE '/assets/index-[^"]+\.js'  | head -n1)"
+            echo "CSS=$CSS_PATH"
+            echo "JS=$JS_PATH"
+
+            [ -n "$CSS_PATH" ] && [ -n "$JS_PATH" ] || { echo "❌ assets not found in HTML"; exit 1; }
+
+            curl -fsSL "$BASE$CSS_PATH?v=$(date +%s)" | grep -q "bg-red-500" \
+              && { echo "✅ red class found in CSS on $BASE"; exit 0; }
           done
-          echo "❌ 本番に 'Todoアプリ!' が見つかりません（キャッシュ/ビルド内容を確認）"
+          echo "❌ CSSに 'bg-red-500' が見つかりません（ビルド/キャッシュを確認）"
           exit 1
 
       - name: Verify production version file
