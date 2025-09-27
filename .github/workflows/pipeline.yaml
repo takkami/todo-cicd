@@ -59,7 +59,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-files
-          path: dist/
+          path: .
+      - name: Sanity check artifact layout
+        run: |
+          test -d dist || (echo "❌ dist not found"; ls -la; exit 1)
+          [ -d dist/dist ] && { echo "❌ nested dist/dist detected"; exit 1; }
+          ls -la dist | head
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -68,7 +73,6 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      # 👇 公式アクションでGCP認証（Secret: GCP_SA_JSON に“生のJSON全文”を保存）
       - name: Auth to Google Cloud (sets ADC)
         uses: google-github-actions/auth@v2
         with:
