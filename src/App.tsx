@@ -25,12 +25,6 @@ function App() {
     );
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleAddTodo();
-    }
-  };
-
   return (
     <div
       className="
