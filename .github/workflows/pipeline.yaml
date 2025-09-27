@@ -24,9 +24,12 @@ jobs:
       - name: Build application
         run: npm run build
 
-      - name: Check built classes
+      - name: Smoke check build outputs
         run: |
-          grep -R "bg-red-500" -n dist || (echo "❌ dist に red クラスが見当たりません（古いソースか Tailwind パージ）"; exit 1)
+          test -f dist/index.html
+          ls dist/assets | grep -E '^index-.*\.css$' >/dev/null
+          ls dist/assets | grep -E '^index-.*\.js$'  >/dev/null
+          grep -R "Todoアプリ!" -n dist/assets/*.js || { echo "❌ bundle に 'Todoアプリ!' が見当たりません"; exit 1; }
 
       - name: Write build metadata
         run: |
@@ -100,26 +103,25 @@ jobs:
         run: |
           firebase deploy --project todoapp-1758903137 --only hosting --non-interactive
 
-      - name: Verify production assets (CSS/JS)
+      - name: Verify production assets (JS contains title)
         run: |
           set -e
           for BASE in "https://todoapp-1758903137.web.app" "https://todoapp-1758903137.firebaseapp.com"; do
             echo "Checking $BASE"
             HTML="$(curl -fsSL "$BASE/?v=$(date +%s)")"
-
-            CSS_PATH="$(echo "$HTML" | grep -oE '/assets/index-[^"]+\.css' | head -n1)"
-            JS_PATH="$(echo  "$HTML" | grep -oE '/assets/index-[^"]+\.js'  | head -n1)"
-            echo "CSS=$CSS_PATH"
-            echo "JS=$JS_PATH"
-
-            [ -n "$CSS_PATH" ] && [ -n "$JS_PATH" ] || { echo "❌ assets not found in HTML"; exit 1; }
-
-            curl -fsSL "$BASE$CSS_PATH?v=$(date +%s)" | grep -q "bg-red-500" \
-              && { echo "✅ red class found in CSS on $BASE"; exit 0; }
+            JS_PATH="$(echo "$HTML" | grep -oE '/assets/index-[^"]+\.js' | head -n1)"
+            test -n "$JS_PATH" || { echo "❌ JS asset not found in HTML"; exit 1; }
+            curl -fsSL "$BASE$JS_PATH?v=$(date +%s)" | grep -q "Todoアプリ!" \
+              && { echo "✅ title found in JS on $BASE"; FOUND=1; break; }
           done
-          echo "❌ CSSに 'bg-red-500' が見つかりません（ビルド/キャッシュを確認）"
-          exit 1
+          test "$FOUND" = "1" || { echo "❌ 本番JSに 'Todoアプリ!' が見当たりません"; exit 1; }
 
-      - name: Verify production version file
+      - name: Verify production version file matches commit
         run: |
-          curl -fsS "https://todoapp-1758903137.web.app/__build.txt" || (echo "❌ __build.txt が配信されていません"; exit 1)
+          set -e
+          SHA_LOCAL="${GITHUB_SHA}"
+          PROD_COMMIT="$(curl -fsSL "https://todoapp-1758903137.web.app/__build.txt" | sed -n 's/^commit=\(.*\)$/\1/p')"
+          echo "local=$SHA_LOCAL"
+          echo "prod =$PROD_COMMIT"
+          test -n "$PROD_COMMIT" || { echo "❌ __build.txt から commit を取得できません"; exit 1; }
+          [ "$PROD_COMMIT" = "$SHA_LOCAL" ] && echo "✅ commit 一致" || { echo "❌ commit 不一致"; exit 1; }
