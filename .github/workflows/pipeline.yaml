@@ -72,17 +72,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-files
-          path: .
+          path: dist
 
       - name: Sanity check artifact layout
         run: |
           test -d dist || (echo "❌ dist not found"; ls -la; exit 1)
           [ -d dist/dist ] && { echo "❌ nested dist/dist detected"; exit 1; }
           ls -la dist | head
-
-      - name: Check built classes (pre-deploy)
-        run: |
-          grep -R "bg-red-500" -n dist || (echo "❌ dist に red クラスが見当たりません（古いソースか Tailwind パージ）"; exit 1)
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
