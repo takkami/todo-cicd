@@ -1,3 +1,6 @@
+![CI](https://github.com/takkami/todo-cicd/actions/workflows/pipeline.yaml/badge.svg)
+[![Live](https://img.shields.io/badge/demo-live-2ea44f)](https://todoapp-1758903137.web.app)
+
 # Todo アプリ (CI/CD ポートフォリオ)
 
 軽量な Todo アプリ を題材に、Vite + React + TypeScript + Tailwind CSS で実装し、GitHub Actions → Firebase Hosting へ 自動ビルド & 自動デプロイ を構築したポートフォリオです。
