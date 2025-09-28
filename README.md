@@ -1,69 +1,189 @@
-# React + TypeScript + Vite
+# Todo アプリ (CI/CD ポートフォリオ)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+軽量な Todo アプリ を題材に、Vite + React + TypeScript + Tailwind CSS で実装し、GitHub Actions → Firebase Hosting へ 自動ビルド & 自動デプロイ を構築したポートフォリオです。
 
-Currently, two official plugins are available:
+リポジトリ: https://github.com/takkami/todo-cicd
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+本番 URL: https://todoapp-1758903137.web.app
 
-## Expanding the ESLint configuration
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark-pc.png" />
+    <img src="docs/screenshots/light-pc.png" alt="Todo アプリ（デスクトップ）" width="780" />
+  </picture>
+</p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark-sp.png" />
+    <img src="docs/screenshots/light-sp.png" alt="Todo アプリ（モバイル）" width="360" />
+  </picture>
+</p>
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 目次
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- [特長](#特長)
+- [技術スタック](#技術スタック)
+- [ローカル開発](#ローカル開発)
+- [テスト](#テスト)
+- [CI/CD 構成](#cicd-構成)
+- [Firebase セットアップ](#firebase-セットアップ)
+- [スクリーンショットの管理](#スクリーンショットの管理)
+- [アクセシビリティ / パフォーマンス](#アクセシビリティ--パフォーマンス)
+- [フォルダ構成](#フォルダ構成)
+- [ライセンス](#ライセンス)
+- [著者 / コントリビュート](#著者--コントリビュート)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 特長
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+✅ Tailwind CSS によるモダン UI（ライト/ダーク自動対応、レスポンシブ）
+
+✅ 未入力でも ボタン色は青系の見た目を維持（機能は無効）
+
+✅ GitHub Actions による CI（型チェック・ビルド・テスト・本番軽量検証）
+
+✅ Firebase Hosting に自動デプロイ
+
+✅ Vitest + React Testing Library のテスト収録
+
+## 技術スタック
+
+- **App**: Vite / React / TypeScript / Tailwind CSS
+- **Test**: Vitest / @testing-library/react
+- **CI/CD**: GitHub Actions
+- **Hosting**: Firebase Hosting
+
+## ローカル開発
+
+```bash
+# 1) 依存関係
+npm ci   # or: npm install
+
+# 2) dev サーバー
+npm run dev
+# → http://localhost:5173
+
+# 3) 本番ビルド
+npm run build    # dist/ が生成
+
+# 4) dist をローカル確認（任意）
+npx serve -s dist
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+推奨: Node.js 20 系
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## テスト
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm test
 ```
+
+**主な観点**
+* 見出しが表示される（📝はアクセシブルネームから除外）
+* タスクの追加／完了トグル
+* 完了数の表示
+* 空入力では追加されない
+
+## CI/CD 構成
+
+* `main` ブランチへの push をトリガー
+* **Build**: 依存解決 → TypeScript ビルド → 生成物の簡易検証（例: `bg-blue-600` の存在）→ `dist/` を artifact 化
+* **Test**: Vitest 実行
+* **Deploy**: artifact 展開 → Firebase Hosting へデプロイ
+* デプロイ後、本番 HTML/CSS/JS を `curl` で取得し 期待クラスの有無を軽量チェック
+
+ワークフロー: `.github/workflows/pipeline.yaml`
+
+## Firebase セットアップ
+
+1. Firebase プロジェクト作成（例: `todoapp-1758903137`）
+2. Hosting を有効化
+3. サービスアカウント（例: Firebase Hosting Admin）の JSON キーを発行
+4. GitHub → Settings → Secrets and variables → Actions に登録
+   * `GOOGLE_APPLICATION_CREDENTIALS` … サービスアカウント JSON の全文
+5. `firebase.json`（SPA リライト & キャッシュ）
+
+```json
+{
+  "hosting": {
+    "public": "dist",
+    "headers": [
+      {
+        "source": "/assets/**",
+        "headers": [
+          { "key": "Cache-Control", "value": "public,max-age=31536000,immutable" }
+        ]
+      },
+      {
+        "source": "/index.html",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache" }
+        ]
+      }
+    ],
+    "rewrites": [{ "source": "**", "destination": "/index.html" }]
+  }
+}
+```
+
+**手動デプロイ（任意）**
+```bash
+npm i -g firebase-tools && firebase deploy --project <YOUR_ID> --only hosting
+```
+
+## スクリーンショットの管理
+
+```
+docs/
+└─ screenshots/
+   ├─ light-pc.png
+   ├─ light-sp.png
+   ├─ dark-pc.png
+   └─ dark-sp.png
+```
+
+README でライト/ダーク自動切替:
+```html
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark-pc.png" />
+  <img src="docs/screenshots/light-pc.png" alt="Todoアプリ（デスクトップ）" />
+</picture>
+```
+
+## アクセシビリティ / パフォーマンス
+
+* aria-label、見出しレベル、Enter で追加などキーボード操作に配慮
+* ダークモード時の文字色を調整
+* フォーカスリング・コントラスト確保
+* アセットは長期キャッシュ、`index.html` は no-cache
+
+## フォルダ構成
+
+```
+todo-cicd/
+├─ src/
+│  ├─ App.tsx
+│  └─ __tests__/
+│     ├─ App.test.tsx
+│     └─ sample.test.ts
+├─ public/
+├─ dist/                     # 本番ビルド（CI では artifact 化）
+├─ docs/
+│  └─ screenshots/
+├─ .github/
+│  └─ workflows/
+│     └─ pipeline.yaml
+├─ firebase.json
+├─ vite.config.ts
+├─ tsconfig.json
+└─ package.json
+```
+
+## ライセンス
+
+MIT License
+
+## 著者 / コントリビュート
+
+* **takkami** (GitHub)
+
+ご覧いただきありがとうございます。UI/テスト/CI の改善や E2E の追加など、継続的にブラッシュアップ予定です。改善提案や Issue を歓迎します！
